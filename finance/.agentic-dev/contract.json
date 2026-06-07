@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "name": "mylink-finance-demo",
+  "spec": {
+    "planning_paths": [
+      "sdd/01_planning",
+      "sdd/02_plan"
+    ],
+    "canonical_targets_dir": "sdd/02_plan/canonical-targets"
+  },
+  "commands": {
+    "build": "python3 -m compileall -q server",
+    "proof": "python3 proof/run_proof.py",
+    "deploy_dev": "echo 'DEV 배포(데모): 로컬 인프로세스 — 망분리 운영계 미접근'",
+    "verify_dev": "python3 sdd/99_toolchain/01_automation/run_citation_check.py --feature eminwon"
+  },
+  "artifacts": {
+    "proof_output": "tmp/proof-results.json"
+  },
+  "integrations": {
+    "github": {
+      "project_title": "MyLink Finance Demo",
+      "issue_label": "agentic-dev"
+    },
+    "discord": {
+      "webhook_env_var": "DISCORD_WEBHOOK_URL"
+    },
+    "sdd": {
+      "plan_dir": "sdd/02_plan",
+      "verify_dir": "sdd/04_verify"
+    }
+  },
+  "notes": [
+    "강의 데모용 가상 금융·공공 서비스(MyLink). 실재 기관·시스템·개인정보 없음.",
+    "proof = pytest 결정적 게이트 (AC-1~AC-5 + 회귀). exit 0 = 전 게이트 통과.",
+    "deploy_dev/verify_dev 는 로컬 데모 스텁 — 망분리 운영계는 접근하지 않는다."
+  ]
+}
