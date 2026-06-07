@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "name": "sdd-contrast-demo",
+  "spec": {
+    "planning_paths": [],
+    "canonical_targets_dir": ""
+  },
+  "commands": {
+    "build": "python3 -c \"import impls, acceptance, contrast\"",
+    "proof": "python3 contrast.py",
+    "deploy_dev": "echo '대조 데모 — 배포 없음'",
+    "verify_dev": "python3 contrast.py"
+  },
+  "artifacts": {},
+  "integrations": {},
+  "notes": [
+    "3강 교육용 대조 데모: 명세 없이(vibe) vs 명세 기반(SDD)를 같은 수용기준으로 채점.",
+    "proof = contrast.py. SDD 측 4/4 통과 + vibe 측 누락 노출 시 exit 0."
+  ]
+}
