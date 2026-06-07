@@ -14,4 +14,4 @@ python3 sdd/99_toolchain/01_automation/run_citation_check.py --feature eminwon
 contract.json 의 `verify_dev` 가 이 스크립트를 가리킨다.
 
 > 결정적 규칙 그래프(`server/shared/rules.py`)를 사용한다. GraphRAG가 아니라,
-> 근거 규정 다단계 조회를 결정적으로 검증하는 도구다.
+> 근거 규정 여러 단계 조회를 결정적으로 검증하는 도구다.

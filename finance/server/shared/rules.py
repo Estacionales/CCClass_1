@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """근거 조회·자격 검색: 결정적 규칙 그래프 (민원 → 필요서류 → 근거규정 → 예외).
 
-GraphRAG가 아니라 결정적 규칙 그래프로 '근거 규정 다단계 조회'를 구현한다.
+GraphRAG가 아니라 결정적 규칙 그래프로 '근거 규정 여러 단계 조회'를 구현한다.
 강의 데모용 가상 규칙: 실재 기관·규정 해석이 아니다.
 """
 from dataclasses import dataclass
@@ -61,7 +61,7 @@ def exceptions_of(minwon_type):
 
 
 def trace(minwon_type):
-    """민원 → 필요서류 → 근거규정 → 예외 다단계 경로를 끝까지 따라간다.
+    """민원 → 필요서류 → 근거규정 → 예외 여러 단계 경로를 끝까지 따라간다.
 
     반환: (steps, citations)
       steps    : CitationStep 리스트 (관계 그래프)

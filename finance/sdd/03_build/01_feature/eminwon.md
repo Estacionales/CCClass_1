@@ -23,7 +23,7 @@
 | `contexts/eminwon/idem.py` | idempotency_key(SHA256) + dedup | 4 |
 | `integration/adapters/gw/base_adapter.py` | 재시도3·서킷·대체 경로 | 2 |
 | `contexts/settlement/batch.py` | 정산 배치 멱등 | 4 |
-| `contexts/advisory/citation.py` | 근거 다단계 인용·거부 | 3 |
+| `contexts/advisory/citation.py` | 근거 여러 단계 인용·거부 | 3 |
 | `shared/{consent_ledger,eligibility,rules}.py` | 공유 계약 | 1·3·5 |
 
 ## Contracts

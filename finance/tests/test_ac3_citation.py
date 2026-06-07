@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""AC-3: 근거 규정 다단계 조회: '있다'가 아니라 '맞다'(경로 일치)까지 검증."""
+"""AC-3: 근거 규정 여러 단계 조회: '있다'가 아니라 '맞다'(경로 일치)까지 검증."""
 from server.contexts.advisory import citation
 from server.shared import rules
 
