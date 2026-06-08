@@ -4,6 +4,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -16,7 +17,8 @@ import java.util.List;
  * 모두 실패하면 빈 결과로 우아하게 저하합니다. 외부 API가 죽어도 수집 파이프라인 전체가 멈추지 않습니다.
  */
 @Component
-public class MolitApiClient {
+@Profile("!stub")
+public class MolitApiClient implements AptTradeSource {
 
     private final WebClient webClient;
     private final XmlMapper xmlMapper = new XmlMapper();
@@ -41,6 +43,7 @@ public class MolitApiClient {
      * @param lawdCd  법정동코드 5자리 (예: 서울 종로구 11110)
      * @param dealYmd 계약월 YYYYMM (예: 202405)
      */
+    @Override
     @Retry(name = "molitApi")
     @CircuitBreaker(name = "molitApi", fallbackMethod = "fallback")
     public List<MolitAptTradeItem> fetchAptTrades(String lawdCd, String dealYmd) {

@@ -10,9 +10,9 @@
   },
   "commands": {
     "build": "./gradlew clean build -x test",
-    "proof": "./gradlew test",
-    "deploy_dev": "echo 'DEV 배포(데모): docker compose up -d (discovery → config → gateway → 도메인) : 운영계 미접근'",
-    "verify_dev": "./gradlew :ingestion-service:test :transaction-service:test :analytics-service:test --tests '*Ac*'"
+    "proof": "./lab.sh verify",
+    "deploy_dev": "docker compose up -d --build",
+    "verify_dev": "./lab.sh e2e"
   },
   "artifacts": {
     "proof_output": "build/reports/tests/test/index.html"
@@ -31,9 +31,10 @@
     }
   },
   "notes": [
-    "강의 17강 단계형 SDD 핸즈온 타깃. 외부 연계는 실재 공개 API(data.go.kr 국토교통부 실거래가).",
-    "Java 21 · Spring Boot 3.5 · Spring Cloud 2025.0. 00_sources(요구사항)는 주어지고, 학습자가 01_planning·03_architecture·02_plan을 단계별로 생성한다.",
-    "shipped 01_planning·02_plan·서비스 코드는 참조 정답(강사 폴백)이다. 진행은 HANDSON.md를 따른다.",
-    "빌드·검증(./gradlew test)은 JDK 21 + Gradle 환경에서 수행한다."
+    "강의 15·16강 부동산 대규모 MSA 핸즈온 타깃. 외부 연계는 실재 공개 API(data.go.kr 국토교통부 실거래가).",
+    "Java 17 · Spring Boot 3.5 · Spring Cloud 2025.0. 멱등 실습: ./lab.sh reset → 발화 구현 → ./lab.sh verify (아키텍처 7/7 + 단위 8/8).",
+    "proof = ./lab.sh verify (결정적·오프라인). verify_dev = ./lab.sh e2e (docker compose 6서비스 부팅 후 게이트웨이 통과 E2E).",
+    "data.go.kr 실호출은 ingestion의 stub 프로필로 대체해 부팅 E2E를 네트워크·인증키 없이 결정적으로 돌린다(tradeCount=4·중위 850,000,000원).",
+    "검증 실적: 이 환경(JDK17+Gradle+Docker)에서 lab.sh verify 7/7·8/8, lab.sh e2e PASS."
   ]
 }

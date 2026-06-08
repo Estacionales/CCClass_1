@@ -1,0 +1,90 @@
+# 부동산 대규모 MSA 서비스 부팅 E2E (eureka → config → 도메인 → gateway).
+# 외부 data.go.kr 호출은 ingestion의 stub 프로필로 대체해 네트워크·인증키 없이 결정적으로 돕니다.
+# healthcheck로 기동 순서를 통제해 멱등하게 부팅합니다.
+#   docker compose up -d --build   후  e2e/smoke.sh
+name: realfield
+
+services:
+  eureka:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args: { JAR: service-discovery/build/libs/service-discovery-0.1.0.jar }
+    ports: ["8761:8761"]
+    environment:
+      EUREKA_SERVER_ENABLESELFPRESERVATION: "false"
+      EUREKA_SERVER_RESPONSECACHEUPDATEINTERVALMS: "2000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8761/"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+      start_period: 15s
+
+  config:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args: { JAR: config-server/build/libs/config-server-0.1.0.jar }
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8888/ingestion-service/default"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  transaction:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args: { JAR: transaction-service/build/libs/transaction-service-0.1.0.jar }
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: "5"
+      EUREKA_INSTANCE_LEASERENEWALINTERVALINSECONDS: "5"
+    depends_on:
+      eureka: { condition: service_healthy }
+
+  analytics:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args: { JAR: analytics-service/build/libs/analytics-service-0.1.0.jar }
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: "5"
+      EUREKA_INSTANCE_LEASERENEWALINTERVALINSECONDS: "5"
+    depends_on:
+      eureka: { condition: service_healthy }
+      transaction: { condition: service_started }
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args: { JAR: ingestion-service/build/libs/ingestion-service-0.1.0.jar }
+    environment:
+      SPRING_PROFILES_ACTIVE: stub      # data.go.kr 오프라인 스텁 (결정적)
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: "5"
+      EUREKA_INSTANCE_LEASERENEWALINTERVALINSECONDS: "5"
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config:8888
+    depends_on:
+      eureka: { condition: service_healthy }
+      config: { condition: service_healthy }
+      transaction: { condition: service_started }
+
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args: { JAR: api-gateway/build/libs/api-gateway-0.1.0.jar }
+    ports: ["8080:8080"]
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: "5"
+    depends_on:
+      eureka: { condition: service_healthy }
+      ingestion: { condition: service_started }
+      transaction: { condition: service_started }
+      analytics: { condition: service_started }

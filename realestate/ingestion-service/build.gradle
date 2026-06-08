@@ -5,7 +5,8 @@ plugins {
 
 dependencies {
     implementation project(':common')
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'   // WebClient
+    implementation 'org.springframework.boot:spring-boot-starter-web'       // servlet(Tomcat): 컨트롤러에서 block() 허용
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'   // WebClient (lb:// 적재 호출)
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
     implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'

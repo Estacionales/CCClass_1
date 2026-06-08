@@ -7,7 +7,8 @@
 #                     게이트는 그대로 둔다.
 #   ./lab.sh solve    정답 구현(solution/)을 복원한다. 라이브가 막혔을 때의 폴백,
 #                     또는 완성본 확인용.
-#   ./lab.sh verify   아키텍처 게이트 + gradle 단위 테스트(8개)를 돌린다.
+#   ./lab.sh verify   아키텍처 게이트(7) + gradle 단위 테스트(8)를 돌린다(결정적·오프라인).
+#   ./lab.sh e2e      6개 서비스를 docker compose로 부팅하고 게이트웨이 통과 E2E를 검증한다(Docker 필요).
 #   ./lab.sh status   현재 상태(도메인 구현 존재 여부)를 보여준다.
 #
 # reset→(발화로 구현 또는 solve)→verify→reset 을 반복해도 매번 동일하게 수렴한다.
@@ -59,10 +60,25 @@ verify() {
   echo "[verify] 통과: 아키텍처 게이트 + 단위 8/8"
 }
 
+# 서비스 부팅 E2E: 6개 서비스를 docker compose로 띄우고 게이트웨이를 통해
+# 수집(stub) → 멱등 적재 → CQRS 조회까지 결정적으로 검증한다(Docker 필요).
+e2e() {
+  echo "[e2e] bootJar 빌드"
+  ./gradlew bootJar --console=plain -q
+  echo "[e2e] 서비스 부팅 (eureka→config→도메인→gateway, healthcheck 순서)"
+  docker compose up -d --build
+  local rc=0
+  bash e2e/smoke.sh || rc=$?
+  echo "[e2e] 정리"
+  docker compose down -v >/dev/null 2>&1 || true
+  return $rc
+}
+
 case "${1:-}" in
   reset)  reset ;;
   solve)  solve ;;
   verify) verify ;;
+  e2e)    e2e ;;
   status) status ;;
-  *) echo "사용법: ./lab.sh {reset|solve|verify|status}"; exit 2 ;;
+  *) echo "사용법: ./lab.sh {reset|solve|verify|e2e|status}"; exit 2 ;;
 esac

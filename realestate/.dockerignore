@@ -1,0 +1,15 @@
+# 빌드 컨텍스트 축소: bootJar(build/libs)만 있으면 됩니다.
+**/src
+**/.gradle
+.gradle
+solution
+sdd
+.claude
+.codex
+.git
+*.md
+**/build/classes
+**/build/tmp
+**/build/resources
+**/build/reports
+**/build/test-results
