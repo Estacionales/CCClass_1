@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "name": "legacy-strangler-demo",
+  "spec": {
+    "planning_paths": [
+      "sdd/01_planning",
+      "sdd/02_plan"
+    ],
+    "canonical_targets_dir": "sdd/02_plan/canonical-targets"
+  },
+  "commands": {
+    "build": "./gradlew clean build -x test",
+    "proof": "./gradlew test",
+    "deploy_dev": "echo 'DEV 부팅(데모): ./gradlew bootRun (단일 모놀리식, 인메모리) : 운영계 미접근'",
+    "verify_dev": "python3 sdd/99_toolchain/01_automation/run_strangler_check.py"
+  },
+  "artifacts": {
+    "proof_output": "build/test-results/test"
+  },
+  "integrations": {
+    "github": {
+      "project_title": "Legacy Strangler Demo",
+      "issue_label": "agentic-dev"
+    },
+    "discord": {
+      "webhook_env_var": "DISCORD_WEBHOOK_URL"
+    },
+    "sdd": {
+      "plan_dir": "sdd/02_plan",
+      "verify_dir": "sdd/04_verify"
+    }
+  },
+  "notes": [
+    "13강 데모용 레거시 도서관(도서·회원·대출) strangler 전환. Java 17 · Spring Boot 3.5 · Gradle.",
+    "단일 Spring Boot 안에서 legacy 패키지(시작 코드, 제공)와 springboot 패키지(학습자 구현)를 같은 인터페이스로 두고, platform 라우터가 migration.properties 로 모듈별 분기.",
+    "proof = JUnit 수용기준 게이트(AC-1 대출 한도 5권 · AC-2 연체 시 거부). 라우터 경유라 legacy·new 어느 쪽이 활성이든 같은 기준을 통과해야 한다.",
+    "verify_dev = strangler 게이트: migration.properties 를 읽어 모듈별 활성 구현과 전환 완료 여부를 판정한다.",
+    "lab.sh reset/solve 로 실습을 멱등하게 반복한다. reset=전부 legacy+springboot 제거, solve=정답 복원+전부 new. 어느 상태든 AC 게이트는 green."
+  ]
+}

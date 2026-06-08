@@ -1,0 +1,25 @@
+// 레거시 도서관 strangler 전환 실습 빌드입니다. 단일 Spring Boot 애플리케이션
+// 안에서 legacy 패키지와 springboot 패키지가 같은 인터페이스를 구현하고, platform
+// 의 라우터가 migration.properties 에 따라 모듈별로 둘 중 하나로 분기합니다.
+// 외부 DB 없이 인메모리로 동작하므로 추가 인프라 없이 빌드·테스트됩니다.
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.0'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'kr.elice.library'
+version = '0.1.0'
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') { useJUnitPlatform() }

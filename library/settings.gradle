@@ -1,0 +1,6 @@
+rootProject.name = 'library'
+
+// 레거시 도서관(도서·회원·대출)을 strangler 패턴으로 한 모듈씩 Spring Boot 로
+// 전환하는 실습 타깃입니다. 단일 Spring Boot 프로젝트 안에서 legacy 패키지(시작 코드)와
+// springboot 패키지(학습자 구현)를 두고, platform 의 라우터가 모듈별로 둘 중 하나로
+// 요청을 보냅니다. migration.properties 를 바꾸면 라우팅이 모듈 단위로 전환됩니다.

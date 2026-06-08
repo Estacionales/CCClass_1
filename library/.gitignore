@@ -1,0 +1,12 @@
+# Gradle / 빌드 산출물
+.gradle/
+build/
+bin/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store

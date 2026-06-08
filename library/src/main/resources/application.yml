@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: library
+
+server:
+  port: 8080
+
+# strangler 라우팅 상태는 migration.properties 에서 읽습니다.
+# 인메모리로 동작하므로 외부 DB·브로커 의존이 없습니다.
