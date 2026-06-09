@@ -3,3 +3,7 @@ __pycache__/
 .pytest_cache/
 tmp/
 .venv/
+
+# 작업 부산물
+.playwright-mcp/
+*_preview.png
