@@ -1,4 +1,4 @@
-# realestate — 부동산 대규모 MSA 데모 (init / complete)
+# realestate — 부동산 대규모 MSA 데모 (init / learning / complete)
 
 15·16강 "부동산 대규모 프로젝트" 실습의 러닝 예제입니다. 실재 공개 데이터
 (data.go.kr 국토교통부 실거래가)를 소재로, Java 17 · Spring Boot · Spring Cloud 로
@@ -8,17 +8,19 @@
 
 | 폴더 | 버전 | 무엇인가 |
 | --- | --- | --- |
-| `init/` | 초기 버전 | 강의 시작 상태. sdd 설계 문서 + 테스트 스펙 + 아키텍처 게이트 + 인프라 모듈(discovery·config·gateway)만 있고, 도메인 4개 모듈의 `src/main/java` 구현은 비어 있습니다. 학습자가 발화로 채웁니다. |
-| `complete/` | 완성 버전 | 도메인 4개 모듈이 모두 구현된 완성본. 아키텍처 게이트 7/7 PASS + gradle 단위 8/8 통과. 정답·대조용. |
+| `learning/` | 실습 버전 | 강의 시작 상태. `sdd/00_sources`(발주 3벌) + 테스트 스펙 + 아키텍처 게이트 + 인프라 설정(application.yml)만 있고, 코드 7개 모듈의 `src/main/java` 와 15강 산출물(`01_planning`·`02_plan`)은 비어 있습니다. **학습자가 발화로 채웁니다.** |
+| `init/` | 시작 보관본 | `learning/` 과 같은 시작 상태를 손대지 않고 보존합니다. 실습이 꼬이면 여기서 다시 시작합니다. |
+| `complete/` | 완성 버전 | 코드 7개 모듈 + 15강 산출물이 모두 채워진 완성본. 아키텍처 게이트 7/7 PASS + gradle 단위 8/8 통과. 정답·대조용. |
 
 ## 실습 방법
 
-1. `cd init` 에서 시작합니다. PPT(15·16강)와 `HANDSON.md`의 발화 흐름을 따라
-   Claude Code 로 도메인 모듈을 구현합니다.
+1. `cd learning` 에서 시작합니다. PPT(15·16강)와 `HANDSON.md`의 발화 흐름을 따라
+   Claude Code 로 코드 모듈을 구현합니다(T1~T4 역할 에이전트: ingestion·transaction·analytics·platform-dev).
    - 15강: 요구사항 정제와 아키텍처 판단(Stage 1~3). `sdd/00_sources` 하나에서
-     `01_planning` → `02_plan` 을 발화로 생성합니다.
+     `01_planning` → `02_plan` 을 발화로 생성합니다(시작 상태에는 비어 있음).
    - 16강: 비중첩 플랜을 병렬로 코드에 내리고(Stage 4) 게이트·테스트로 검증합니다.
-2. 막히거나 결과를 대조하려면 `complete/` 를 봅니다.
+     16강만 새로 시작하면 `./lab.sh solve stage3` 로 15강 산출물(가드레일)을 먼저 깝니다.
+2. 막히거나 결과를 대조하려면 `complete/` 를 보거나 `./lab.sh solve`(코드)·`solve stage3`(산출물)로 복원합니다.
 
 ## 각 버전 검증 (동일 명령)
 
@@ -30,8 +32,8 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 ```
 
 - `complete/` : 아키텍처 게이트 7/7 PASS · 단위 8/8 통과.
-- `init/` : 시작 시 도메인 구현이 없어 컴파일에서 멈춥니다. 도메인 4개 모듈을 채우면
-  complete 와 같은 결과로 수렴합니다.
+- `learning/`·`init/` : 시작 시 코드 구현이 없어 컴파일에서 멈춥니다. 코드 7개 모듈을 채우면
+  complete 와 같은 결과로 수렴합니다(또는 `./lab.sh solve`).
 
 ## 프론트엔드 (web) — Next.js + 브라우저 E2E
 

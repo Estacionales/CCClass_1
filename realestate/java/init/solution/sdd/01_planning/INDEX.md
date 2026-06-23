@@ -1,6 +1,7 @@
 # 01_planning INDEX: RealField
 
 > 00_sources 요구사항을 구조화한 계획 산출물의 색인입니다.
+> 외부 API 명세 원천: `00_sources/01_apis/molit_apt_trade_api.md`(data.go.kr 아파트 매매 실거래가). 요구사항정의서: `00_sources/02_requirements/realfield-부동산실거래.md`.
 
 | 섹션 | 파일 | 내용 |
 | --- | --- | --- |

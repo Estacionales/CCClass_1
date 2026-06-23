@@ -6,19 +6,21 @@
 
 ## 준비
 
-실습은 시작 상태인 `init/` 에서 출발합니다. 완성본 대조는 옆 `complete/` 를 봅니다.
+실습은 시작 상태인 `learning/` 에서 출발합니다. `init/` 은 손대지 않는 시작 보관본이고,
+완성본 대조는 옆 `complete/` 를 봅니다.
 ```bash
 git clone https://github.com/say828/agentic-dev-demo.git
-cd agentic-dev-demo/realestate/init
+cd agentic-dev-demo/realestate/java/learning
 claude                       # Claude Code 실행 (.claude/skills/sdd 자동 적용)
 ```
 
 실습 하네스 `lab.sh`로 시작 상태와 정답을 오갑니다. 발화 실습은 reset에서 출발합니다.
 ```bash
-./lab.sh status     # 현재 도메인 구현 존재 여부
-./lab.sh reset      # 도메인 구현(common·ingestion·transaction·analytics)을 비운 시작 상태
-./lab.sh verify     # 아키텍처 게이트(7) + gradle 단위 테스트(8개)
-./lab.sh solve      # 정답 구현 복원 (라이브 폴백·완성본 확인)
+./lab.sh status        # 코드·15강 산출물·web 구현 존재 여부
+./lab.sh reset         # 코드 7개 모듈(도메인+인프라)의 src/main/java 를 비운 시작 상태
+./lab.sh verify        # 아키텍처 게이트(7) + gradle 단위 테스트(8개)
+./lab.sh solve         # 정답 코드 복원 (라이브 폴백·완성본 확인)
+./lab.sh solve stage3  # 15강 산출물(01_planning+02_plan) 복원 (16강만 새로 시작할 때)
 ```
 - 빌드 환경: **JDK 17 + Gradle 래퍼**(`./gradlew`). 인증키는 런타임에만 필요하고, 단위 검증은 네트워크 없이 결정적입니다.
 - `reset → 발화로 구현 → verify → reset`을 반복해도 매번 **아키텍처 게이트 PASS(7/7) + 단위 8/8**로 수렴합니다.
@@ -31,7 +33,9 @@ claude                       # Claude Code 실행 (.claude/skills/sdd 자동 적
 > 요구사항정의서(`02_requirements/realfield-부동산실거래.md`, SFR·DAR·PER·SIR·SECR·CONR),
 > 외부 API 공개명세(`01_apis/molit_apt_trade_api.md`, data.go.kr 실거래 상세 자료),
 > 데이터 명세서(`03_data_spec/realprice_data_spec.md`, 항목 사전·코드 도메인·표기 규칙)입니다.
-> 학습자가 발화로 `01_planning` → `02_plan`을 생성합니다. shipped 산출물은 참조 정답입니다.
+> 시작 상태(`learning/`·`init/`)에는 `00_sources` 만 있고 `01_planning`·`02_plan`은 비어 있습니다.
+> 학습자가 발화로 `01_planning` → `02_plan`을 생성합니다. 막히면 `complete/` 와 대조하거나
+> `./lab.sh solve stage3` 로 정답 산출물을 복원합니다.
 
 ### Stage 1 · 구조화 (00_sources → 01_planning)
 ```
@@ -67,16 +71,19 @@ claude                       # Claude Code 실행 (.claude/skills/sdd 자동 적
 ### 4-0. 시작 상태로 되돌립니다
 ```bash
 ./lab.sh reset
-# 도메인 구현(common·ingestion·transaction·analytics)이 비워집니다.
-# sdd 문서·테스트(스펙)·인프라 모듈(discovery·config·gateway)·게이트는 그대로입니다.
+# 코드 7개 모듈(common·ingestion·transaction·analytics·discovery·config·gateway)의
+# src/main/java 가 비워집니다.
+# sdd 문서(00_sources)·테스트(스펙)·인프라 설정(application.yml)·게이트는 그대로입니다.
+# 15강 산출물(01_planning·02_plan)이 없다면 먼저: ./lab.sh solve stage3
 ```
 
 ### 4-1. 네 에이전트로 비중첩 병렬 구현 (덱 16강의 병렬 호출과 동일)
 모듈이 겹치지 않으므로 네 작업을 동시에 발화합니다.
 ```
->@ingestion-dev T1: data.go.kr 수집 + 정규화 + 회복력.
+>@ingestion-dev T1: data.go.kr 수집 + 정규화 + 회복력 + common 공유 계약 소유.
   WebClient 호출에 @Retry(3)·@CircuitBreaker(fallback=빈결과),
   Normalizer는 common/DealAmountParser로 콤마 금액 변환·해제(cdealType=O) 표시.
+  공유 계약 common(AptTransaction·DealAmountParser)을 한곳에 둔다(T2·T3가 의존).
 
 >@transaction-dev T2: 자연키 멱등 적재 + 조회.
   port/AptTradeStore + JPA 어댑터, existsByNaturalKey면 skip(AC-4).
@@ -84,8 +91,8 @@ claude                       # Claude Code 실행 (.claude/skills/sdd 자동 적
 >@analytics-dev T3: 시세 통계 read model.
   해제거래 제외 후 중위 거래금액·㎡당 단가 집계(AC-5·AC-3), transaction 조회.
 
->@platform-dev T4: common 공유 계약(AptTransaction·DealAmountParser) 정리.
-  세 도메인이 의존하는 표준 스키마와 정합 규칙을 한곳에 둔다.
+>@platform-dev T4: 인프라 공통(디스커버리·설정·게이트웨이).
+  Eureka(@EnableEurekaServer)·Config Server·API Gateway(8080 단일 진입점, 3 라우트).
 ```
 결과는 `sdd/03_build/01_feature/realprice.md`에 current-state로 남깁니다(Overwrite Rule).
 

@@ -1,16 +1,25 @@
 #!/usr/bin/env bash
 # 부동산 대규모 MSA 실습 하네스: 발화만으로 몇 번이든 같은 결과로 반복(멱등)하게 만든다.
 #
-#   ./lab.sh reset    깨끗한 시작 상태로 되돌린다. 도메인 구현(common·ingestion·
-#                     transaction·analytics 의 src/main/java)을 비우고, 프론트(web)의
-#                     화면·컴포넌트·api 구현도 placeholder 로 되돌린다. sdd 문서·
-#                     테스트(스펙)·인프라 모듈(discovery·config·gateway)·빌드 설정·
-#                     게이트·web 스캐폴딩(shadcn·계약 타입·프록시·E2E 스펙)은 그대로 둔다.
-#   ./lab.sh solve    정답 구현(solution/)을 복원한다(백엔드 + web 동시). 라이브가
-#                     막혔을 때의 폴백, 또는 완성본 확인용.
-#   ./lab.sh verify   아키텍처 게이트(7) + gradle 단위 테스트(8)를 돌린다(결정적·오프라인).
-#   ./lab.sh e2e      6개 서비스를 docker compose로 부팅하고 게이트웨이 통과 E2E를 검증한다(Docker 필요).
-#   ./lab.sh status   현재 상태(백엔드 도메인 구현 + web 구현 존재 여부)를 보여준다.
+# 실습은 이 폴더(시작 상태)에서 발화로 진행한다. PPT(15·16강)의 T1~T4 분담과 같다.
+#   T1 @ingestion-dev  : ingestion-service + common (공유 계약 소유)
+#   T2 @transaction-dev: transaction-service
+#   T3 @analytics-dev  : analytics-service
+#   T4 @platform-dev   : service-discovery + config-server + api-gateway (인프라)
+#
+#   ./lab.sh reset        깨끗한 시작 상태로 되돌린다. 코드 7개 모듈(common·ingestion·
+#                         transaction·analytics·discovery·config·gateway 의 src/main/java)을
+#                         비우고, 프론트(web)의 화면·컴포넌트·api 구현도 placeholder 로
+#                         되돌린다. sdd 문서(00_sources·99_toolchain)·테스트(스펙)·
+#                         build.gradle·게이트·인프라 설정(application.yml)·web 스캐폴딩은 그대로 둔다.
+#                         (01_planning·02_plan 은 건드리지 않는다. 15강 산출물은 solve stage3 로 다룬다.)
+#   ./lab.sh solve        정답 구현(solution/)을 복원한다(백엔드 7모듈 + web). 라이브가
+#                         막혔을 때의 폴백, 또는 완성본 확인용.
+#   ./lab.sh solve stage3 15강 산출물(sdd/01_planning + sdd/02_plan)을 복원한다.
+#                         16강만 새로 시작할 때 ①의 명세·플랜(가드레일)을 되살린다.
+#   ./lab.sh verify       아키텍처 게이트(7) + gradle 단위 테스트(8)를 돌린다(결정적·오프라인).
+#   ./lab.sh e2e          7개 모듈(6서비스)을 docker compose로 부팅하고 게이트웨이 통과 E2E를 검증한다(Docker 필요).
+#   ./lab.sh status       현재 상태(백엔드 코드 + 15강 산출물 + web 구현 존재 여부)를 보여준다.
 #
 #   ── 웹(Next.js) 명령 (Node 필요) ──────────────────────────────────
 #   ./lab.sh web-reset    web/ 의 화면·컴포넌트·api 구현만 placeholder 로 되돌린다.
@@ -30,14 +39,17 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 cd "$HERE"
-DOMAIN=(common ingestion-service transaction-service analytics-service)
+# 코드 7개 모듈(PPT T1~T4). reset/solve 가 src/main/java 만 다루므로
+# 게이트웨이 라우트 등 인프라 설정(application.yml)은 항상 보존된다.
+DOMAIN=(common ingestion-service transaction-service analytics-service service-discovery config-server api-gateway)
 : "${JAVA_HOME:=$(/usr/libexec/java_home -v 17 2>/dev/null || true)}"
 export JAVA_HOME
 
 reset() {
   for m in "${DOMAIN[@]}"; do rm -rf "$m/src/main/java/kr"; done
-  echo "[reset] 도메인 구현 제거 완료. 시작 상태로 되돌렸습니다."
-  echo "        남아 있는 것: sdd/ 문서, src/test/ (스펙), 인프라 모듈, build.gradle, 게이트."
+  echo "[reset] 코드 7개 모듈 구현 제거 완료. 시작 상태로 되돌렸습니다."
+  echo "        남아 있는 것: sdd/00_sources·99_toolchain, src/test/ (스펙), 인프라 설정, build.gradle, 게이트."
+  echo "        (15강 산출물 sdd/01_planning·02_plan 은 건드리지 않았습니다. 필요하면 solve stage3.)"
   # 프론트(web)도 같은 한 발로 시작 상태(placeholder)로 되돌린다(web/ 가 있을 때만).
   if [ -d "$WEB_DIR/placeholder" ]; then web_reset; fi
   status
@@ -45,15 +57,29 @@ reset() {
 
 solve() {
   for m in "${DOMAIN[@]}"; do
-    if [ ! -d "solution/$m/kr" ]; then echo "[solve] solution/$m 스냅샷이 없습니다." >&2; exit 1; fi
+    if [ ! -d "solution/$m/kr" ]; then echo "[solve] solution/$m 스냅샷이 없습니다. 건너뜀." >&2; continue; fi
     rm -rf "$m/src/main/java/kr"
     mkdir -p "$m/src/main/java"
     cp -R "solution/$m/kr" "$m/src/main/java/"
   done
-  echo "[solve] 정답 구현(백엔드)을 복원했습니다."
+  echo "[solve] 정답 구현(백엔드 7모듈)을 복원했습니다."
   # 프론트(web)도 같은 한 발로 정답 복원(web/solution 이 있을 때만).
   if [ -d "$WEB_DIR/solution" ]; then web_solve; fi
   status
+}
+
+# 15강 산출물(01_planning + 02_plan)을 정답 스냅샷에서 복원한다.
+# 16강만 새로 시작할 때 ①의 명세·플랜(가드레일)을 되살리는 용도다.
+solve_stage3() {
+  if [ ! -d "solution/sdd/01_planning" ]; then
+    echo "[solve stage3] solution/sdd 스냅샷이 없습니다." >&2; exit 1
+  fi
+  for s in 01_planning 02_plan; do
+    rm -rf "sdd/$s"
+    cp -R "solution/sdd/$s" "sdd/$s"
+  done
+  echo "[solve stage3] 15강 산출물(sdd/01_planning + sdd/02_plan)을 복원했습니다."
+  echo "              이제 이 명세·플랜이 16강 구현의 가드레일입니다."
 }
 
 status() {
@@ -62,9 +88,14 @@ status() {
     n=$((n + $(find "$m/src/main/java" -name '*.java' 2>/dev/null | wc -l | tr -d ' ')))
   done
   if [ "$n" != "0" ]; then
-    echo "[status] 백엔드 도메인 구현 있음 (${n}개 .java) → verify 가능"
+    echo "[status] 백엔드 코드 구현 있음 (${n}개 .java) → verify 가능"
   else
-    echo "[status] 백엔드 도메인 구현 없음(시작 상태) → 발화로 구현 필요"
+    echo "[status] 백엔드 코드 구현 없음(시작 상태) → 발화로 구현 필요 (또는 ./lab.sh solve)"
+  fi
+  if [ -f "sdd/01_planning/01_feature/realprice_ingest.md" ]; then
+    echo "[status] 15강 산출물 있음 (sdd/01_planning·02_plan) → 16강 가드레일 준비됨"
+  else
+    echo "[status] 15강 산출물 없음(시작 상태) → 발화로 생성 (또는 16강만 시작 시 ./lab.sh solve stage3)"
   fi
   web_status
 }
@@ -259,7 +290,7 @@ web_e2e() {
 
 case "${1:-}" in
   reset)        reset ;;
-  solve)        solve ;;
+  solve)        if [ "${2:-}" = "stage3" ]; then solve_stage3; else solve; fi ;;
   verify)       verify ;;
   e2e)          e2e ;;
   status)       status ;;
@@ -269,5 +300,5 @@ case "${1:-}" in
   web-build)    web_build ;;
   web-dev)      web_dev ;;
   web-e2e)      web_e2e ;;
-  *) echo "사용법: ./lab.sh {reset|solve|verify|e2e|status|web-reset|web-solve|web-install|web-build|web-dev|web-e2e}"; exit 2 ;;
+  *) echo "사용법: ./lab.sh {reset|solve|solve stage3|verify|e2e|status|web-reset|web-solve|web-install|web-build|web-dev|web-e2e}"; exit 2 ;;
 esac
