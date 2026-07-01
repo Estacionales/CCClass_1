@@ -1,4 +1,4 @@
-# 알림(alerts) 도메인 · Acceptance Criteria (EARS): 같은 5패턴
+# 알림(alerts) 도메인 · Acceptance Criteria (EARS): 같은 5패턴 
 
 > 인증 말고도 같은 EARS 5패턴이 그대로 적용됨을 보이는 두 번째 예(개요만).
 
