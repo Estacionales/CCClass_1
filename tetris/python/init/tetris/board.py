@@ -10,6 +10,10 @@ def is_full(row):
 
 
 def clear_full_lines(rows, width):
-    """AC-3·AC-4 를 구현하세요. (새 보드, 지운 줄 수) 를 돌려줍니다."""
-    # TODO: 명세(sdd/01_planning/tetris_spec.md)의 AC-3·AC-4 대로 구현하세요.
+    """AC-3·AC-4: 가득 찬 줄을 지우고 윗줄을 내립니다. (새 보드, 지운 줄 수) 를 돌려줍니다.
+
+    TODO(T2·T3) 명세대로 구현하세요.
+      - 힌트 T2: is_full(row) 로 각 줄이 가득 찼는지 판정합니다.
+      - 힌트 T3: 가득 찬 줄을 빼고, 뺀 수만큼 맨 앞(위)에 빈 줄을 넣어 윗줄을 내립니다.
+    """
     raise NotImplementedError("TODO: clear_full_lines 를 구현하세요")

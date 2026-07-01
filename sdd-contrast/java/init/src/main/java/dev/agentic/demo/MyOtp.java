@@ -16,7 +16,7 @@ import java.util.Map;
 public class MyOtp implements Otp {
 
     private final Map<String, String> codes = new HashMap<>();
-    private final List<String> created = new ArrayList<>(); // List라 중복 가입을 못 막습니다
+    private final List<String> created = new ArrayList<>(); // TODO(AC-4 멱등): Set 으로 바꿔 중복 가입을 막으세요
 
     @Override
     public String issue(String email, int t) {
@@ -26,6 +26,8 @@ public class MyOtp implements Otp {
 
     @Override
     public boolean verify(String email, String code, int t) {
+        // TODO(AC-2 만료): 발급 시각을 보관해 t - issuedAt > 300 이면 거부하세요.
+        // TODO(AC-3 잠금): 오답 횟수를 세어 5회면 이후 정답도 거부하세요.
         // 코드 일치만 본다. 만료(t)도, 시도 횟수도 검사하지 않는다.
         String rec = codes.get(email);
         return rec != null && rec.equals(code);

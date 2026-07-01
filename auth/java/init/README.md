@@ -10,10 +10,14 @@
 ./gradlew uiParity                        # verify_dev (회귀 게이트 재실행)
 ```
 
+> 주의: 이 폴더(`init`·`learning`)는 **plan 시작점**이라 `src/main` 구현과 테스트가 비어 있습니다.
+> 위 명령이 **10/10 으로 통과하는 완성 baseline 은 `complete/`** 이고, S05 환경구축은 거기서 확인합니다.
+> 이 폴더는 S08~S09 에서 명세부터 직접 채워 갑니다.
+
 ## 강의 ↔ 단계 매핑
 | 강의 | 단계 | 산출물 |
 | --- | --- | --- |
-| S05 환경구축 | clone→부팅 | repo 부팅 + proof self-test |
+| S05 환경구축 | clone→부팅 | `complete/` proof 10/10 self-test (이 폴더는 plan 시작점) |
 | S07 01_planning | EARS spec | `sdd/01_planning/01_feature/auth_feature_spec.md` |
 | S08 02_plan | todos·분할 | `sdd/02_plan/01_feature/auth_todos.md` |
 | S09 03_build | 구현 | `src/main/java/com/datasense/auth/*` + `sdd/03_build/01_feature/auth.md` |

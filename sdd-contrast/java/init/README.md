@@ -13,5 +13,5 @@ cd learning             # 실습 시작점 (MyOtp 가 바이브 수준 = 1/4, AC
 ./gradlew test          # 참고 대조(ContrastTest): SDD 4/4 > vibe
 ```
 
-`learning`=실습 시작점(1/4, AC-2~4 TODO 힌트), `init`=더 비운 골격, `complete`=정답(4/4). 막히면 complete 와 비교하세요.
+`learning`·`init`=실습 시작점(1/4, AC-2~4 TODO 힌트, 둘은 동일), `complete`=정답(4/4). 막히면 complete 와 비교하세요.
 JDK 17 만 있으면 됩니다.
