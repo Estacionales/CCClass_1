@@ -32,7 +32,7 @@
   },
   "notes": [
     "강의 데모용 가상 싸이월드(미니홈피) 서비스. 실재 개인정보 없음.",
-    "MVP 도메인: 일촌(chon)·미니홈피(minihomepy)·방명록(guestbook)·도토리(acorn).",
+    "MVP 도메인: 일촌(chon)·미니홈피(minihomepy)·방명록(guestbook)·도토리(acorn)·투데이(today)·버디버디 메신저(buddy).",
     "proof = pytest 결정적 게이트. exit 0 = 통과. 이 폴더는 01_planning~02_plan까지만 채워진 계획 시작점이다."
   ]
 }

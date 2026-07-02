@@ -8,6 +8,7 @@ import pytest
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from server.contexts.acorn.service import AcornService  # noqa: E402
+from server.contexts.buddy.service import BuddyService  # noqa: E402
 from server.contexts.chon.service import ChonService  # noqa: E402
 from server.contexts.guestbook.service import GuestbookService  # noqa: E402
 from server.contexts.minihomepy.service import MinihomepyService  # noqa: E402
@@ -44,3 +45,11 @@ def guestbook():
     clock = {"t": 1000.0}
     svc = GuestbookService(clock=lambda: clock["t"])
     return svc, clock
+
+
+@pytest.fixture
+def buddy():
+    clock = {"t": 1000.0}
+    svc = BuddyService(clock=lambda: clock["t"])
+    svc.test_clock = clock
+    return svc
