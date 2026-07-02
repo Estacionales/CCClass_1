@@ -49,22 +49,33 @@ POST /api/v1/ingest/jobs (via api-gateway)
 - 정당화된 제외: `transaction-service` 내부 구현 세부(T2 회귀 범위).
 
 ## Execution Checklist
-- [ ] `ingestion-service/src/main/resources/application.yml`의 로컬 기본값
-      `molit.apt-trade-path`를 상세(Dev) 엔드포인트로 정정(`07_integration` §1 드리프트 정정 —
-      이 파일은 T1 소유이므로 T1이 직접 수정. config-server 쪽 값은 T4 소관, §공유 파일 경계 참조)
-- [ ] molit API 클라이언트 구현(WebClient/RestClient + `jackson-dataformat-xml`)
-- [ ] 페이징 전량 수집 루프(`totalCount` 기준 종료 판정)
-- [ ] resultCode 분기 처리(`07_integration` §3 매트릭스: 000/03/01·04·99/12/20/22/30/31/32)
-- [ ] resilience4j retry(`max-attempts=3`, `wait-duration=500ms`) + circuitbreaker(`sliding-window-size=20`,
-      `failure-rate-threshold=50`, `wait-duration-in-open-state=10s`) 적용 확인
-- [ ] 동시성 제한(시군구 단위 세마포어 5) + 트래픽초과(22) 백오프·이월(`07_integration` §5)
-- [ ] `common` 유틸로 필드 정규화 → `AptTransactionDto` 매핑, 품질 게이트 위반 스킵·사유 수집
-- [ ] `transaction-service`의 `POST /internal/transactions/batch-upsert` 클라이언트 호출(최대 1000건/배치)
-- [ ] `POST /api/v1/ingest/jobs` 컨트롤러(`05_api` §2 요청/응답 스키마)
-- [ ] 단위 테스트(XML 파싱, resultCode 분기) + T2 완료 후 통합 테스트(실제 upsert 호출)
+- [x] `ingestion-service/src/main/resources/application.yml`의 로컬 기본값
+      `molit.apt-trade-path`를 상세(Dev) 엔드포인트로 정정(`07_integration` §1 드리프트 정정)
+- [x] molit API 클라이언트 구현(WebClient + `jackson-dataformat-xml`, `MolitApiClient`) — 단일 페이지
+      호출까지. 전량 페이징 루프는 별도 항목(아래, 미착수)
+- [ ] 페이징 전량 수집 루프(`totalCount` 기준 종료 판정) — 미착수
+- [ ] resultCode 분기 처리(`07_integration` §3 매트릭스: 000/03/01·04·99/12/20/22/30/31/32) — 미착수.
+      현재는 fetch 성공/실패(재시도·서킷 소진)만 `MolitFetchResult`로 구분, resultCode별 세부 분기 없음
+- [x] resilience4j retry(`max-attempts=3`, `wait-duration=500ms`) + circuitbreaker(`sliding-window-size=20`,
+      `failure-rate-threshold=50`, `wait-duration-in-open-state=10s`) 적용 확인 — `@Retry`/`@CircuitBreaker`
+      + fallback(`fetchPageFallback`) 구현, config-server 기존 정책값과 이름(`molitApi`) 일치
+- [ ] 동시성 제한(시군구 단위 세마포어 5) + 트래픽초과(22) 백오프·이월(`07_integration` §5) — 미착수
+- [x] `common` 유틸로 필드 정규화 → 매핑 — 계획의 `AptTransactionDto`가 아니라 pin 테스트가 고정한
+      `common.AptTransaction`(11필드)으로 매핑(`AptTransactionNormalizer`). 품질 게이트 위반(금액 파싱
+      실패·면적 0 이하)은 `IllegalArgumentException`으로 스킵 신호
+- [ ] `transaction-service`의 `POST /internal/transactions/batch-upsert` 클라이언트 호출 — 미착수
+- [ ] `POST /api/v1/ingest/jobs` 컨트롤러(`05_api` §2 요청/응답 스키마) — 미착수
+- [x] 단위 테스트 — `DealAmountParserTest`(common), `AptTransactionNormalizerTest`(ingestion-service) 확장,
+      `./gradlew :common:test :ingestion-service:test` BUILD SUCCESSFUL. XML 파싱·resultCode 분기 자체
+      단위테스트는 그 기능이 아직 없어 해당 없음. T2 완료 후 통합 테스트는 미착수
 
 ## Current Notes
 - 2026-07-02: 계획 수립. 구현 착수 전.
+- 2026-07-02: `MolitApiClient`(단일 페이지 + resilience4j)·`AptTransactionNormalizer`·엔드포인트 드리프트
+  정정 구현 완료(ingestion-dev). 진행 중 `common.AptTransaction`을 14필드로 잘못 만들어
+  `transaction-service`/`analytics-service`의 기존 pin 테스트 컴파일을 깼던 것을 오케스트레이션 세션에서
+  11필드로 재작성해 바로잡음(`03_build/01_feature/02_t1_ingestion.md` 참조). 페이징 루프·잡 컨트롤러·
+  batch-upsert 클라이언트·동시성 제한은 다음 이터레이션.
 
 ## Validation (proof 게이트)
 - `./gradlew :ingestion-service:test` exit 0

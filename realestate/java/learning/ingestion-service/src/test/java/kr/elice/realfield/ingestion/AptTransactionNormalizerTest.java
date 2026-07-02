@@ -42,4 +42,26 @@ class AptTransactionNormalizerTest {
 
         assertTrue(tx.canceled());
     }
+
+    @Test
+    @DisplayName("품질 게이트: 파싱 불가 거래금액 item 은 스킵 신호(예외)로 flag 한다 (0 무단 대체 금지)")
+    void flagsUnparseableAmount() {
+        MolitAptTradeItem raw = new MolitAptTradeItem(
+                "11110", "청운동", "123", "경복궁아파트", "84.97",
+                "2024", "5", "12", "팔만이천", "10", "2003",
+                "중개거래", null, null);
+
+        assertThrows(IllegalArgumentException.class, () -> normalizer.normalize(raw));
+    }
+
+    @Test
+    @DisplayName("품질 게이트: 전용면적 0 이하 item 은 스킵 신호(예외)로 flag 한다")
+    void flagsNonPositiveArea() {
+        MolitAptTradeItem raw = new MolitAptTradeItem(
+                "11110", "청운동", "123", "경복궁아파트", "0",
+                "2024", "5", "12", " 82,500", "10", "2003",
+                "중개거래", null, null);
+
+        assertThrows(IllegalArgumentException.class, () -> normalizer.normalize(raw));
+    }
 }

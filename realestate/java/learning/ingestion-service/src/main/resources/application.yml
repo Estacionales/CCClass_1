@@ -19,6 +19,6 @@ eureka:
 # Config 서버 미기동 시 로컬 기본값(데모 단독 실행용).
 molit:
   base-url: ${MOLIT_BASE_URL:https://apis.data.go.kr/1613000}
-  apt-trade-path: /RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade
+  apt-trade-path: /RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev   # 상세(Dev) 엔드포인트 (07_integration §1)
   service-key: ${MOLIT_SERVICE_KEY:}
   num-of-rows: 1000

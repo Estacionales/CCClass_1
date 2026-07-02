@@ -49,16 +49,30 @@ common (java-library, 역의존 없음)
 - 정당화된 제외: 없음. 하류 3개 모듈의 컴파일 확인까지가 이 트랙의 회귀 범위다.
 
 ## Execution Checklist
-- [ ] `AptTransactionDto` 정의 (`04_data` §1.1 필드 전체, `kr.elice.realfield.common.dto`)
-- [ ] `DealAmountNormalizer` 구현 + 단위테스트(경계값: 선행 공백, 콤마, 0, 음수, 파싱 불가 문자열)
-- [ ] `CancelStatusResolver` 구현 + 단위테스트(`O`, 공백, null)
-- [ ] `MolitDateParser` 구현 + 단위테스트(`YY.MM.DD` → `LocalDate`, 공백 → null, 세기 결정 규칙 명시)
-- [ ] `AptTransactionNaturalKey` 값 객체 구현(9개 필드 `equals`/`hashCode`) + 단위테스트(동일 키 재계산 시 동등성)
-- [ ] `run_arch_check.py` 규칙 2(common 역의존 없음) 로컬 확인
-- [ ] 공개 API 확정 공지 — T1/T2/T3 트랙에 "소비 가능" 신호(Phase 1 시작 조건)
+- [x] `AptTransaction` 정의 — 계획 당시 이름은 `AptTransactionDto`/`.dto` 패키지였으나, 이 저장소에
+      이미 커밋되어 있던 `transaction-service`/`analytics-service`의 pin 테스트가 `kr.elice.realfield.common.AptTransaction`
+      11필드(`sggCd, umdNm, aptNm, exclusiveArea, floor, buildYear, dealYear, dealMonth, dealDay,
+      dealAmountWon, canceled`)를 이미 고정하고 있어 그 계약을 정본으로 채택(`03_build/01_feature/02_t1_ingestion.md`
+      "명명·형태 정합 메모" 참조). `04_data` §1.1 전체 필드보다 좁음 — 알려진 드리프트.
+- [x] `DealAmountParser` 구현 + 단위테스트 — 계획의 `DealAmountNormalizer`가 아니라 pin 테스트가 고정한
+      이름 `DealAmountParser`(`toWon(String):long`)로 구현. 경계값(선행공백/복수콤마/빈값/공백/null/
+      비숫자/0/음수) 전부 커버.
+- [ ] `CancelStatusResolver` 구현 + 단위테스트 — 별도 공유 클래스로 만들지 않음. `cdealType=="O"` 판정은
+      `AptTransactionNormalizer`(ingestion-service) 내부의 단순 조건식으로 인라인 처리(요청 범위 밖).
+- [ ] `MolitDateParser` 구현 + 단위테스트 — 미구현. `AptTransaction`에 날짜 필드(canceledDate 등)가
+      없어 현재는 필요 없음(위 드리프트와 연동).
+- [x] 자연키 — 별도 `AptTransactionNaturalKey` 값 객체 대신 `AptTransaction.naturalKey()` 인스턴스
+      메서드로 구현(9필드 조합, `04_data` §1.2와 일치). 단위테스트는 아직 없음(T2 upsert 구현 시점에 추가 예정).
+- [x] `run_arch_check.py` 규칙 2(common 역의존 없음) 확인 — PASS.
+- [x] 공개 API 확정 공지(사실상) — `AptTransaction`/`DealAmountParser`는 T2/T3의 pin 테스트 컴파일
+      요구사항과 충돌 없음을 실측 확인(`compileTestJava` 재실행, `03_build` 참조). T1은 이 API 위에서
+      구현·테스트 통과. T2/T3 착수 가능.
 
 ## Current Notes
 - 2026-07-02: 계획 수립. 구현 착수 전.
+- 2026-07-02: `AptTransaction`/`DealAmountParser` 구현 완료(ingestion-dev, T1 슬라이스와 함께).
+  `CancelStatusResolver`/`MolitDateParser`/LAWD_CD 마스터는 아직 미착수 — 필요해지는 시점(날짜 필드가
+  계약에 추가되거나 마스터 데이터가 실제로 쓰일 때)까지 보류.
 
 ## Validation (proof 게이트)
 - `./gradlew :common:test` exit 0
