@@ -151,6 +151,39 @@ GET /api/v1/transactions?sggCd=11110&dealYm=202405&page=0&size=20
 | --- | --- | --- |
 | 400 | `VALIDATION_ERROR` | 파라미터 형식 오류 |
 
+## 3b. `POST /internal/transactions/batch-upsert` — 원장 적재 (내부, 게이트웨이 미경유)
+
+> 근거: SFR-005, PER-002(처리량), AC-1, AC-4(멱등). 소유 서비스: `transaction-service`.
+> `ingestion-service`가 `lb://transaction-service`로 직접 호출한다(SIR-004 디스커버리 기반, 서비스 간
+> 호출이라 SIR-003 게이트웨이 단일 진입점의 적용 대상이 아니다 — 외부 클라이언트는 이 경로를 호출할 수 없다).
+> 페이지당 최대 1000건(`numOfRows`)을 건별 호출 없이 배치로 적재해 PER-002 처리량 목표를 만족한다.
+
+### 요청
+
+```http
+POST /internal/transactions/batch-upsert
+Content-Type: application/json
+
+{
+  "transactions": [
+    { "sggCd": "11110", "umdNm": "청운동", "aptNm": "청운현대", "exclusiveArea": 84.97,
+      "floor": 10, "dealYear": 2024, "dealMonth": 5, "dealDay": 23, "dealAmountWon": 825000000,
+      "canceled": false, "canceledDate": null, "...": "04_data §1.1 AptTransaction 필드 전체" }
+  ]
+}
+```
+
+### 응답 — `200 OK`
+
+```json
+{ "receivedCount": 140, "createdCount": 95, "updatedCount": 45 }
+```
+
+- 자연키(`04_data` §1.2, 9개 필수 컬럼) 충돌 시 갱신(update), 없으면 신규 생성(create). 신규/갱신 판정과
+  건수만 반환하고 개별 행 결과는 반환하지 않는다(응답 크기 제어).
+- 이 엔드포인트는 `05_api §2`의 `upsertedCount = createdCount + updatedCount`로 집계되어 최종 응답에 반영된다.
+- 인증: 서비스 간 호출이며 최종 사용자에게 노출되지 않는다. 게이트웨이 라우트에 이 경로를 추가하지 않는다.
+
 ## 4. `GET /api/v1/market-stats` — 시세 통계 조회 (게이트웨이 라우트: `/api/v1/market-stats/**`)
 
 > 근거: SFR-008, SFR-009, PER-001, AC-3(해제 제외), AC-5. 소유 서비스: `analytics-service`(read model).
@@ -202,6 +235,7 @@ GET /api/v1/market-stats?sggCd=11110&dealYm=202405
 | --- | --- | --- |
 | `POST /api/v1/ingest/jobs` | SFR-001, SFR-002, SFR-010, SFR-011 | AC-1, AC-2, AC-4 |
 | `GET /api/v1/transactions` | SFR-007 | AC-5 |
+| `POST /internal/transactions/batch-upsert` | SFR-005 | AC-1, AC-4 |
 | `GET /api/v1/market-stats` | SFR-008, SFR-009 | AC-3, AC-5 |
 
 ## 6. 범위 밖 / 후속 과제
