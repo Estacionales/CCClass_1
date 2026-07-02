@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "name": "cyworld-minihomepy-demo",
+  "spec": {
+    "planning_paths": [
+      "sdd/01_planning",
+      "sdd/02_plan"
+    ],
+    "canonical_targets_dir": "sdd/02_plan/canonical-targets"
+  },
+  "commands": {
+    "build": "python3 -m compileall -q server",
+    "proof": "python3 proof/run_proof.py",
+    "deploy_dev": "echo 'DEV 부팅(데모): 로컬 인프로세스: compose/운영계 미접근'",
+    "verify_dev": "python3 sdd/99_toolchain/01_automation/run_ui_parity.py"
+  },
+  "artifacts": {
+    "proof_output": "tmp/proof-results.json"
+  },
+  "integrations": {
+    "github": {
+      "project_title": "Cyworld Minihomepy Demo",
+      "issue_label": "agentic-dev"
+    },
+    "discord": {
+      "webhook_env_var": "DISCORD_WEBHOOK_URL"
+    },
+    "sdd": {
+      "plan_dir": "sdd/02_plan",
+      "verify_dir": "sdd/04_verify"
+    }
+  },
+  "notes": [
+    "강의 데모용 가상 싸이월드(미니홈피) 서비스. 실재 개인정보 없음.",
+    "MVP 도메인: 일촌(chon)·미니홈피(minihomepy)·방명록(guestbook)·도토리(acorn).",
+    "proof = pytest 결정적 게이트. exit 0 = 통과. 이 폴더는 01_planning~02_plan까지만 채워진 계획 시작점이다."
+  ]
+}
