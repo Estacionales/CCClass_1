@@ -37,7 +37,7 @@ public class AptTransactionNormalizer {
                 trim(item.aptNm()),
                 exclusiveArea,
                 parseRequiredInt(item.floor(), "층"),
-                parseNullableInt(item.buildYear()),
+                parseIntOrZero(item.buildYear()),
                 parseRequiredInt(item.dealYear(), "계약년도"),
                 parseRequiredInt(item.dealMonth(), "계약월"),
                 parseRequiredInt(item.dealDay(), "계약일"),
@@ -64,9 +64,14 @@ public class AptTransactionNormalizer {
         return Integer.parseInt(raw.trim());
     }
 
-    private static Integer parseNullableInt(String raw) {
+    /**
+     * {@code buildYear}는 {@code common.AptTransaction}에서 primitive {@code int}다(결측을 표현할
+     * null이 없다) — 결측(공백)이면 0으로 채운다. CONR-004/DAR-006이 원하는 진짜 결측 보존(null)은
+     * 이 필드가 primitive로 고정된 이상 표현할 수 없다 — 알려진 드리프트(03_build 참조).
+     */
+    private static int parseIntOrZero(String raw) {
         if (raw == null || raw.trim().isEmpty()) {
-            return null;
+            return 0;
         }
         return Integer.parseInt(raw.trim());
     }

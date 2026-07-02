@@ -48,17 +48,30 @@ GET /api/v1/transactions?sggCd=&dealYm= (via api-gateway, T3/최종 클라이언
 - 정당화된 제외: `ingestion-service`/`analytics-service` 내부 구현(각자 트랙 회귀 범위).
 
 ## Execution Checklist
-- [ ] `AptTransaction` JPA 엔티티(`04_data` §1.1 필드) + 자연키 9개 컬럼 복합 유니크 제약
-- [ ] Repository: 자연키 기준 존재 조회 + upsert(트랜잭션 단위)
+- [x] `AptTransaction` JPA 엔티티(`04_data` §1.1 필드) + 자연키 9개 컬럼 복합 유니크 제약
+- [x] Repository: 자연키 기준 존재 조회 + upsert(트랜잭션 단위)
 - [ ] `POST /internal/transactions/batch-upsert` 컨트롤러(`05_api` §3b, 최대 1000건 배치)
 - [ ] `GET /api/v1/transactions` 컨트롤러(`05_api` §3, `sggCd`+`dealYm` 필수 파라미터, 페이징, 정렬)
 - [ ] `canceled`/`canceledDate` 컬럼 매핑, 재수집 시 정상→해제 전환 반영(CONR-005) 테스트
-- [ ] 단위 테스트: 자연키 충돌 시 갱신, 비충돌 시 생성, 동시 재수집 시 중복 미생성(AC-4)
-- [ ] H2 스캐마(`ddl-auto: create-drop`) 학습용 제약을 `03_build`에 현재 상태로 기록(운영 전환 시
+- [x] 단위 테스트: 자연키 충돌 시 갱신, 비충돌 시 생성, 동시 재수집 시 중복 미생성(AC-4)
+- [x] H2 스캐마(`ddl-auto: create-drop`) 학습용 제약을 `03_build`에 현재 상태로 기록(운영 전환 시
       마이그레이션 필요 — 본 트랙 범위 밖, 후속 과제로만 남김)
 
 ## Current Notes
-- 2026-07-02: 계획 수립. 구현 착수 전.
+- 2026-07-02: 계획 수립.
+- 2026-07-02: 포트/어댑터/커맨드 서비스 구현. `AptTradeStore`(포트) +
+  `JpaAptTradeStore`/`AptTradeRepository`/`AptTradeEntity`(JPA 어댑터) + `TransactionCommandService`.
+  `IdempotentUpsertTest`(AC-4) 통과, arch check 7/7("transaction-service → common" PASS 전환).
+  현재 상태 상세는 `sdd/03_build/01_feature/03_t2_transaction.md`(DRAFT) 참조.
+  - 체크 항목의 알려진 편차(조용히 확장하지 않음):
+    · 자연키 유니크는 "9개 컬럼 복합"이 아니라 `AptTransaction.naturalKey()` 단일 파생 문자열 컬럼
+      `natural_key`에 건다(pin 테스트/참조 답안이 문자열 키 방식을 정본으로 고정).
+    · 엔티티는 `common.AptTransaction` 11필드만 저장 — `04_data` §1.1 전체 필드보다 좁고
+      `canceledDate`는 없다(계약 축소 드리프트, `common` 미변경).
+    · "upsert"/멱등은 skip-if-exists(신규만 삽입)이며 충돌 건 **갱신 없음** — 재수집 시 정상→해제
+      전환 반영(CONR-005)은 이 턴에서 미충족(의도된 스코프 한계).
+  - 미착수(범위 밖): `POST /internal/transactions/batch-upsert`·`GET /api/v1/transactions` 컨트롤러,
+    `TransactionApplication` 부트스트랩, `canceledDate` 매핑·해제 전환 갱신 테스트.
 
 ## Validation (proof 게이트)
 - `./gradlew :transaction-service:test` exit 0

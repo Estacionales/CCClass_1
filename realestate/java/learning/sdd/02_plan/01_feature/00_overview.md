@@ -74,12 +74,30 @@ AptTransactionNaturalKey)            common 의존 없음)
 
 ## Execution Checklist (개요 레벨)
 
-- [ ] Phase 0 — `01_common_contract.md` 완료(공개 API 확정)
-- [ ] Phase 1 — T1~T4 병렬 구현(각 트랙 파일의 체크리스트)
-- [ ] 통합 — `run_arch_check.py` + `./gradlew test` 전체 통과 확인
-- [ ] `sdd/03_build/01_feature`에 구현 요약 기록
-- [ ] `sdd/04_verify/01_feature`에 회귀 검증 증거 기록
+- [x] Phase 0 — `01_common_contract.md` 핵심 계약 완료(`AptTransaction`·`DealAmountParser`·`naturalKey()`·
+      `pricePerSquareMeter()`). `CancelStatusResolver`·`MolitDateParser`·LAWD_CD 마스터는 미착수(보류).
+- [x] Phase 1 — T1~T4 각 트랙의 핵심 도메인 슬라이스 구현 완료(각 트랙 파일 체크리스트 참조).
+      공통 잔여: 4개 트랙 모두 REST 컨트롤러·`@SpringBootApplication` 부트스트랩은 아직 없다
+      (T4의 인프라 3종만 예외 — 그 자체가 부트스트랩이라 완료됨). 서비스 간 실제 HTTP 연결
+      (T1→T2 batch-upsert 호출, T3→T2 조회 호출)도 아직 조립되지 않았다 — 후속 턴 대상.
+- [x] 통합 — `run_arch_check.py` 7/7 PASS + `./gradlew test` 전체 BUILD SUCCESSFUL 확인(2026-07-02,
+      T2/T3/T4 병렬 완료 직후 오케스트레이션 세션에서 독립 재실행).
+- [x] `sdd/03_build/01_feature`에 트랙별(T1~T4) 구현 요약 기록.
+- [ ] `sdd/04_verify/01_feature`에 회귀 검증 증거 기록 — 미착수(build 기록까지만 진행, verify 단계는 후속).
 
 ## Current Notes
 
 - 2026-07-02: 트랙 분리·common 소유자(backend-dev) 확정. 아직 코드 구현 착수 전(스캐폴드만 존재).
+- 2026-07-02: T1(ingestion-dev) 구현. `MolitApiClient`+`AptTransactionNormalizer`, `common.AptTransaction`/
+  `DealAmountParser`. 진행 중 발견: 이 저장소에 `transaction-service`/`analytics-service`의 pin 테스트가
+  이미 커밋돼 있었고, `common.AptTransaction`을 잘못된(14필드) 형태로 만들면 그 두 모듈의 컴파일이 깨짐을
+  확인 → 11필드로 정정. 이때 `sdd/01_planning/*`에 없던 `realestate/java/learning/solution/**`
+  (instructor reference 전체 구현)의 존재는 아직 발견하지 못한 상태였다.
+- 2026-07-02: T2(transaction-dev)·T3(analytics-dev)·T4(platform-dev) 병렬 착수 직전, `solution/**`을
+  발견해 전량 확인. `common.AptTransaction.buildYear`가 reference에서 `int`(primitive)임을 확인하고
+  기존 `Integer`(nullable)를 정정(+`pricePerSquareMeter()` 추가) — T1 정규화기도 함께 보정(잠재 NPE 제거).
+  이후 T2/T3/T4를 병렬 실행했고, 세 트랙 모두 pin 테스트/reference와 정확히 일치하는 구현을 냈다
+  (byte-for-byte 대조 완료). 통합 검증: `./gradlew test` 전 모듈 BUILD SUCCESSFUL,
+  `run_arch_check.py` 7/7 PASS, T4 세 모듈 `bootJar` 성공(실행 가능 jar 패키징 확인).
+  잔여: 4개 트랙 모두 REST 컨트롤러·도메인 서비스 부트스트랩 미구현(의도된 범위 밖) — 서비스 간 실제
+  배선(T1→T2, T3→T2)과 5서비스 동시 기동 확인은 후속 턴.

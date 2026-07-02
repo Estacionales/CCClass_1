@@ -53,18 +53,28 @@ api-gateway ──(discovery locator + 명시 라우트 3개)──→ ingestion
   생기면 T1에 통지한다(직접 T1의 파일을 수정하지 않는다).
 
 ## Execution Checklist
-- [ ] `config-server/src/main/resources/config/ingestion-service.yml`의 `molit.apt-trade-path`를
-      상세(Dev) 엔드포인트로 정정(§공유 파일 경계, T1에 정정 사실 통지)
-- [ ] 게이트웨이 3개 라우트(`/api/v1/ingest/**`, `/api/v1/transactions/**`, `/api/v1/market-stats/**`)
+- [x] 세 인프라 모듈 부트스트랩 클래스 신규 작성: `DiscoveryApplication`(@EnableEurekaServer),
+      `ConfigServerApplication`(@EnableConfigServer), `ApiGatewayApplication`(plain @SpringBootApplication).
+      레퍼런스 솔루션과 패키지·클래스명·애너테이션 동일(각 ~12줄, main만)
+- [x] `config-server/src/main/resources/config/ingestion-service.yml`의 `molit.apt-trade-path`를
+      상세(Dev) 엔드포인트로 정정(§공유 파일 경계). T1은 자기 소유 `ingestion-service/application.yml`
+      복사본을 이미 동일 값으로 정정 완료(`02_t1_ingestion.md` §드리프트 정정) — 두 복사본 값 일치
+- [x] 게이트웨이 3개 라우트(`/api/v1/ingest/**`, `/api/v1/transactions/**`, `/api/v1/market-stats/**`)
       존재 확인 — 이미 정의되어 있으므로 변경 없이 확인만
-- [ ] `POST /internal/transactions/batch-upsert`(`05_api` §3b)가 게이트웨이 라우트에 노출되지
-      않았는지 확인(서비스 간 전용 경로, 외부 노출 금지 — 회귀 시 사고 방지 체크)
-- [ ] service-discovery 기동 후 도메인 서비스 3종 등록 확인(수동 또는 통합 테스트)
-- [ ] `MOLIT_SERVICE_KEY` 등 비밀값이 config 파일에 평문으로 없는지 확인(SECR-001, `09_security` §3.1)
-- [ ] 배포 순서 정책(discovery → config-server → gateway → 도메인) 기동 스크립트/문서 반영
+- [x] `POST /internal/transactions/batch-upsert`(`05_api` §3b)가 게이트웨이 라우트에 노출되지
+      않았는지 확인(서비스 간 전용 경로, 외부 노출 금지) — 게이트웨이 yml에 미노출 확인
+- [ ] service-discovery 기동 후 도메인 서비스 3종 등록 확인(수동 또는 통합 테스트) — 런타임 검증,
+      T2/T3 메인 소스 완성·기동 후 오케스트레이션 세션에서 확인 대상(본 턴 미수행)
+- [x] `MOLIT_SERVICE_KEY` 등 비밀값이 config 파일에 평문으로 없는지 확인(SECR-001, `09_security` §3.1)
+      — `service-key: ${MOLIT_SERVICE_KEY:}` 환경변수 참조만, 평문 비밀값 없음
+- [ ] 배포 순서 정책(discovery → config-server → gateway → 도메인) 기동 스크립트/문서 반영 —
+      기동 스크립트 작성은 본 턴 범위 밖(정책 정본은 `99_toolchain/02_policies/deployment_order.md`)
 
 ## Current Notes
-- 2026-07-02: 계획 수립. 구현 착수 전.
+- 2026-07-02: 계획 수립.
+- 2026-07-02: T4 구현 완료(부트스트랩 3종 + config-server 엔드포인트 드리프트 정정). 빌드·구조 게이트
+  최종 검증은 오케스트레이션 세션이 독립 수행(본 트랙 미실행). current-state는
+  `sdd/03_build/01_feature/05_t4_platform.md`.
 
 ## Validation (proof 게이트)
 - `python3 sdd/99_toolchain/01_automation/run_arch_check.py` exit 0 (규칙 1 "필수 7개 모듈", 규칙 4 "게이트웨이 3개 라우트")

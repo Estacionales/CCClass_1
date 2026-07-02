@@ -1,7 +1,7 @@
 # ingestion-service 가 Config 서버에서 받아가는 외부화 설정입니다.
 molit:
   base-url: https://apis.data.go.kr/1613000
-  apt-trade-path: /RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade
+  apt-trade-path: /RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev
   # 인증키는 환경변수로만 주입합니다(Config 파일·이미지에 평문 저장 금지).
   service-key: ${MOLIT_SERVICE_KEY:}
   num-of-rows: 1000

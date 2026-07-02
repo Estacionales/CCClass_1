@@ -17,7 +17,7 @@ public record AptTransaction(
         String aptNm,
         double exclusiveArea,
         int floor,
-        Integer buildYear,
+        int buildYear,
         int dealYear,
         int dealMonth,
         int dealDay,
@@ -38,5 +38,13 @@ public record AptTransaction(
                 String.valueOf(dealMonth),
                 String.valueOf(dealDay),
                 String.valueOf(dealAmountWon));
+    }
+
+    /** ㎡당 단가(원). T3(analytics)의 중위 ㎡당 단가 집계가 사용한다. 전용면적이 0 이하이면 0을 반환한다. */
+    public long pricePerSquareMeter() {
+        if (exclusiveArea <= 0) {
+            return 0L;
+        }
+        return Math.round(dealAmountWon / exclusiveArea);
     }
 }
