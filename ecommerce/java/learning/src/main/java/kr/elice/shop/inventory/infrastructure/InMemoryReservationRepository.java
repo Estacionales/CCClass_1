@@ -7,7 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import kr.elice.shop.inventory.domain.Reservation;
 import kr.elice.shop.inventory.domain.ReservationRepository;
 import kr.elice.shop.inventory.domain.ReservationStatus;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class InMemoryReservationRepository implements ReservationRepository {
 
     private final Map<String, Reservation> store = new ConcurrentHashMap<>();

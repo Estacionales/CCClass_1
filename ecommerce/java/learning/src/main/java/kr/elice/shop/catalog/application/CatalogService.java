@@ -11,7 +11,9 @@ import kr.elice.shop.shared.DomainException;
 import kr.elice.shop.shared.ErrorCode;
 import kr.elice.shop.shared.Money;
 import kr.elice.shop.shared.Page;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CatalogService {
 
     private final ProductRepository products;
@@ -47,7 +49,7 @@ public class CatalogService {
                 .filter(p -> name == null || p.name().contains(name))
                 .filter(p -> status == null || p.status() == status)
                 .toList();
-        int fromIndex = Math.min(page * size, filtered.size());
+        int fromIndex = Math.min((page - 1) * size, filtered.size());
         int toIndex = Math.min(fromIndex + size, filtered.size());
         return Page.of(filtered.subList(fromIndex, toIndex), page, size, filtered.size());
     }

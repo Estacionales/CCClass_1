@@ -6,7 +6,9 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import kr.elice.shop.catalog.domain.Product;
 import kr.elice.shop.catalog.domain.ProductRepository;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class InMemoryProductRepository implements ProductRepository {
 
     private final Map<String, Product> store = new ConcurrentHashMap<>();

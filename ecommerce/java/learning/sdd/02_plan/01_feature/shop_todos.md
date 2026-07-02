@@ -9,8 +9,9 @@
 실습용 init 상태로 시작했고(main 소스 비어 있음, 테스트만 존재), 단계별로 다시 구현합니다.
 
 - STEP 2 에서 도메인 구역(구역 1 공유 커널, 구역 2~6 의 도메인 계층 + 단위 테스트가 직접 쓰는 CatalogService·InventoryService 와 catalog·inventory 인메모리 어댑터)을 구현했습니다. 14개 도메인 단위 테스트가 green 입니다.
-- 다음 청크에서 web 계층, cart·ordering·payment 응용/인프라, checkout 오케스트레이션, ShopApplication, DemoPaymentGateway 를 구현해 E2E 9개를 green 으로 만듭니다.
-- 빌드/검증 현재 상태는 `03_build/01_feature/shop.md` 와 `04_verify/01_feature/shop.md` 의 STEP 2 절에 기록했습니다.
+- STEP 6 에서 나머지 청크(cart·ordering·payment 의 응용/인프라, checkout 오케스트레이션, 전 컨텍스트 web 계층, `ShopApplication`, `DemoPaymentGateway`)를 구현해 21개 REST 엔드포인트를 모두 노출했습니다. `./gradlew test` 로 단위 14 + E2E 9 = 23개 전부 green 을 확인했습니다.
+- 취소(`POST /api/orders/{id}/cancel`)는 예약 해제·결제 환불 보상이 필요해 `checkout.web.OrderCancelController` 가 처리합니다(경로는 `/api/orders/{id}/cancel` 로 ordering 표면과 동일). `OrderController` 에 그대로 두면 `ordering → checkout → payment → ordering` 순환 의존이 생겨 `run_arch_check.py` 가 실패하기 때문입니다.
+- 빌드/검증 현재 상태는 `03_build/01_feature/shop.md` 와 `04_verify/01_feature/shop.md` 에 기록했습니다.
 
 ## Acceptance Criteria 체크리스트
 

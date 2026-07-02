@@ -5,9 +5,12 @@ import kr.elice.shop.catalog.application.CatalogService;
 import kr.elice.shop.catalog.domain.Product;
 import kr.elice.shop.inventory.domain.Reservation;
 import kr.elice.shop.inventory.domain.ReservationRepository;
+import kr.elice.shop.inventory.domain.ReservationStatus;
 import kr.elice.shop.shared.DomainException;
 import kr.elice.shop.shared.ErrorCode;
+import org.springframework.stereotype.Service;
 
+@Service
 public class InventoryService {
 
     private final CatalogService catalog;
@@ -40,6 +43,17 @@ public class InventoryService {
         Reservation reservation = get(reservationId);
         reservation.release();
         reservations.save(reservation);
+    }
+
+    /** 취소 보상: RESERVED 는 해제하고, CONFIRMED 는 이미 차감된 물리 재고를 되돌린다. */
+    public void compensate(String reservationId) {
+        Reservation reservation = get(reservationId);
+        if (reservation.status() == ReservationStatus.RESERVED) {
+            reservation.release();
+            reservations.save(reservation);
+        } else if (reservation.status() == ReservationStatus.CONFIRMED) {
+            catalog.addStock(reservation.productId(), reservation.quantity());
+        }
     }
 
     public int available(String productId) {

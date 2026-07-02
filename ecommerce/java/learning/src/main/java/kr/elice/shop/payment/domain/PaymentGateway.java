@@ -4,5 +4,5 @@ import kr.elice.shop.shared.Money;
 
 public interface PaymentGateway {
 
-    boolean charge(String orderId, Money amount);
+    boolean charge(String orderId, Money amount, String method);
 }
