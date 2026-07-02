@@ -51,7 +51,9 @@
 ### 3.4 키 만료·교체 무중단 반영 (SEC-005)
 
 - 인증키는 Config Server 값으로 관리하여, 키 교체 시 서비스 재배포 없이 설정 갱신으로 반영 가능한 구조를
-  목표로 한다(구체적인 리프레시 메커니즘은 `01_planning/07_integration`에서 확정, 후속 작성 대상).
+  목표로 한다. 연계 계약 확정 값(엔드포인트·재시도·트래픽 한도)은 `01_planning/07_integration/molit_integration.md`가
+  정본이며, 구체적인 설정 리프레시 메커니즘(Config Server refresh 이벤트 등)은 `01_planning/06_iac`(후속
+  작성 대상)에서 다룬다.
 - 키 반영 지연(최대 1영업일, `00_sources/01_apis/molit_apt_trade_api.md` §7)을 감안해, 신규 키 발급은
   기존 키 만료 이전에 선제 신청한다(운영 절차, `05_operate/01_runbooks` 후속 반영 대상).
 

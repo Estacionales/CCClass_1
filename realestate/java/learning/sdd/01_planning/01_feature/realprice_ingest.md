@@ -99,9 +99,10 @@ RealField는 국토교통부 아파트 매매 실거래가 OpenAPI를 시군구(
 
 ## 4. 범위 밖 / 후속 정본 참조
 
-- 자연키 상세 구성, AptTransaction 필드·타입 매핑 전체 표: `01_planning/04_data`(후속 작성 대상).
-- 거래 조회·시세 통계 조회 API 계약: `01_planning/05_api`(후속 작성 대상).
-- 외부 연계 회복력 정책 값(재시도 횟수·서킷 임계치): `01_planning/07_integration`(후속 작성 대상).
+- MSA 경계 결정과 기각한 대안: `01_planning/03_architecture/realprice_architecture.md`.
+- 자연키 상세 구성, AptTransaction 필드·타입 매핑 전체 표: `01_planning/04_data/realprice_data.md`.
+- 거래 조회·시세 통계 조회 API 계약: `01_planning/05_api/realprice_api.md`.
+- 외부 연계 회복력 정책 값(재시도 횟수·서킷 임계치·엔드포인트 확정): `01_planning/07_integration/molit_integration.md`.
 - 비기능 수용기준(성능·가용성): `01_planning/08_nonfunctional/realprice_nonfunctional.md`.
 - 보안 수용기준: `01_planning/09_security/realprice_security.md`.
 
@@ -111,4 +112,6 @@ RealField는 국토교통부 아파트 매매 실거래가 OpenAPI를 시군구(
   기본(non-Dev) 엔드포인트(`/RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade`)를 가리킨다. 본 문서 AC-1은
   상세(Dev) 엔드포인트(`/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev`)를 표준으로 채택하므로
   (SIR-001, `00_sources/01_apis/molit_apt_trade_api.md` §2), 수집 구현 시 이 설정을 상세 엔드포인트로
-  정정해야 한다. 아직 코드 구현 전이므로 본 절에 드리프트로만 기록한다.
+  정정해야 한다. 엔드포인트 확정 근거와 정정 지시의 정본은
+  `01_planning/07_integration/molit_integration.md` §1이다. 아직 코드 구현 전이므로 본 절에는
+  드리프트 요약만 남긴다.
